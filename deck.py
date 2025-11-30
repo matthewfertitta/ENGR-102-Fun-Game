@@ -21,23 +21,24 @@ class Deck:
         12: "Twelve",
         }
         # initalize deck
-        self.deck = [card.Card("Zero", "number", 0)]
+        self.deck = [card.Card(num_words[0], "number", 0)]
         # generate number cards
-        for i in range(12):
-            for num in range(i):
+        for num in range(13):
+            for i in range(num):
                 self.deck.append(card.Card(num_words[num], "number", num))
         # add score modifiers
-        self.deck.append([card.Card("+2", "modifier", 2),
-                          card.Card("+4", "modifier", 4),
-                          card.Card("+6", "modifier", 6),
-                          card.Card("+8", "modifier", 8),
-                          card.Card("+10", "modifier", 10),
-                          card.Card("x2", "modifier", 2)])
+        self.deck.append(card.Card("+2", "modifier", 2))
+        self.deck.append(card.Card("+4", "modifier", 4))
+        self.deck.append(card.Card("+6", "modifier", 6))
+        self.deck.append(card.Card("+8", "modifier", 8))
+        self.deck.append(card.Card("+10", "modifier", 10))
+        self.deck.append(card.Card("x2", "modifier", 2))
         # add action cards
         for i in range(3):
             self.deck.append(card.Card("Freeze", "ability", 0, "Skips turn of affected player"))
             self.deck.append(card.Card("Flip\nThree", "ability", 0, "Draws 3 cards on affected player, if you bust early stop"))
             self.deck.append(card.Card("Second\nChance", "ability", 0, "Saves you when you bust"))
+
         # shuffle list
         random.shuffle(self.deck)
 
@@ -53,6 +54,14 @@ class Deck:
         """ Sets deck to a new list """
         self.deck = deck
 
+    def add_card(self, card: card.Card):
+        """ Adds a card back into the deck """
+        self.deck.append(card)
+
     def draw_card(self):
         """ Takes a card out of the deck """
-        return self.deck.pop()
+        if not len(self.deck) == 0:
+            return self.deck.pop()
+        else:
+            self.__init__()
+            return self.deck.pop()
