@@ -11,15 +11,451 @@
 # Date:         29/11/2025	(dd/mm/yyyy)
 
 import pygame
-from deck import Deck
-from player import Player
+import random
+
+# ======================== CARD CLASS ========================
+
+class Card:
+    """ Information about a single card """
+
+    def __init__(self, card_name: str, card_type: str, value=None, ability_effect=None):
+        """
+        Constructor for the Card Class
+        
+        Arguments:
+        card_name -- Name of the card
+        card_type -- Type of card (number, modifier, ability)
+        value -- Point value of card
+        ability_effect -- Description of card ability
+        """
+        self.card_name = card_name
+        self.card_type = card_type
+        self.value = value
+        self.ability_effect = ability_effect
+        self.rect = None  # holds position and size
+
+        # colors
+        self.BLACK = pygame.Color("black")
+        self.WHITE = pygame.Color("white")
+        self.CARD_COLOR = (200, 200, 200)
+
+        # card specifications
+        self.CARD_WIDTH = 80
+        self.CARD_HEIGHT = 120
+        self.CARD_SPACING = 10
+        self.BORDER_COLOR = self.BLACK
+        
+    def draw_card_to_screen(self, surface: pygame.Surface, x, y):
+        """
+        Draws a card at a specified position
+        
+        Arguments:
+        surface -- An instance of pygame's surface class
+        x -- X position on screen
+        y -- Y position on screen
+        """
+        self.rect = pygame.Rect(x, y, self.CARD_WIDTH, self.CARD_HEIGHT)
+
+        # draws card background
+        pygame.draw.rect(surface, self.CARD_COLOR, self.rect)
+        pygame.draw.rect(surface, self.BORDER_COLOR, self.rect, 2)  # border
+
+        # draws card text
+        self.draw_text(surface, x, y)
+
+    def draw_text(self, surface, x, y):
+        """
+        Helper method that handles multiline text and draws to the screen
+        
+        Arguments:
+        surface -- An instance of pygame's surface class
+        x -- X position on screen
+        y -- Y position on screen
+        """
+        font = pygame.font.Font(None, 24)
+        lines = self.card_name.split("\n")  # handles multi line text
+        
+        line_height = font.get_height()
+        total_text_height = len(lines) * line_height
+
+        # vertically center the text
+        start_y = y + (self.CARD_HEIGHT - total_text_height) // 2
+
+        # render text
+        for i, line in enumerate(lines):
+            label = font.render(line, True, self.BLACK)
+            text_x = x + self.CARD_WIDTH // 2 - label.get_width() // 2
+            text_y = start_y + i * line_height
+            surface.blit(label, (text_x, text_y))
+
+    def get_card_width(self):
+        """ Getter method for CARD_WIDTH """
+        return self.CARD_WIDTH
+    
+    def get_card_height(self):
+        """ Getter method for CARD_HEIGHT """
+        return self.CARD_HEIGHT
+    
+    def get_card_spacing(self):
+        """ Getter method for CARD_SPACING """
+        return self.CARD_SPACING
+
+    def get_card_name(self):
+        """ Getter method for card_name """
+        return self.card_name
+    
+    def get_card_type(self):
+        """ Getter method for card_type """
+        return self.card_type
+    
+    def get_value(self):
+        """ 
+        Getter method for card value 
+        
+        Raises:
+        NotImplementedError -- If value is None
+        """
+        if self.value == None:
+            raise NotImplementedError
+        return self.value
+    
+    def get_ability_effect(self):
+        """ 
+        Returns the description of an ability card 
+        
+        Raises:
+        NotImplementedError -- If card is not an ability card
+        """
+        if not self.isAnAbilityCard():
+            raise NotImplementedError
+        return self.ability_effect
+
+    def isAnAbilityCard(self):
+        """ Boolean for checking if a card is an ability card or not """
+        return self.ability_effect != None
+    
+    def isARegularCard(self):
+        """ Boolean for checking if a card is a regular number card or not """
+        return self.card_type == "number"
+
+    def __str__(self):
+        """ Python's version of Java's toString (used for debugging) """
+        return self.card_name
+
+
+# ======================== DECK CLASS ========================
+
+class Deck:
+    """ A class that holds the data for the deck """
+
+    def __init__(self):
+        """ Constructor for the Deck Class """
+        # int number to letter number dict
+        num_words = {
+            0: "Zero",
+            1: "One",
+            2: "Two",
+            3: "Three",
+            4: "Four",
+            5: "Five",
+            6: "Six",
+            7: "Seven",
+            8: "Eight",
+            9: "Nine",
+            10: "Ten",
+            11: "Eleven",
+            12: "Twelve",
+        }
+        # initialize deck
+        self.deck = [Card(num_words[0], "number", 0)]
+        # generate number cards
+        for num in range(13):
+            for i in range(num):
+                self.deck.append(Card(num_words[num], "number", num))
+        # add score modifiers
+        self.deck.append(Card("+2", "modifier", 2))
+        self.deck.append(Card("+4", "modifier", 4))
+        self.deck.append(Card("+6", "modifier", 6))
+        self.deck.append(Card("+8", "modifier", 8))
+        self.deck.append(Card("+10", "modifier", 10))
+        self.deck.append(Card("x2", "modifier", 2))
+        # add action cards
+        for i in range(3):
+            self.deck.append(Card("Freeze", "ability", 0, "Skips turn of affected player"))
+            self.deck.append(Card("Flip\nThree", "ability", 0, "Draws 3 cards on affected player, if you bust early stop"))
+            self.deck.append(Card("Second\nChance", "ability", 0, "Saves you when you bust"))
+
+        # shuffle list
+        random.shuffle(self.deck)
+
+    def shuffle_deck(self):
+        """ Shuffles the deck """
+        random.shuffle(self.deck)
+
+    def get_deck(self):
+        """ Returns the deck list """
+        return self.deck
+    
+    def set_deck(self, deck):
+        """
+        Sets deck to a new list
+        
+        Arguments:
+        deck -- A list of Card objects
+        """
+        self.deck = deck
+
+    def add_card(self, card: Card):
+        """ 
+        Adds a card back into the deck 
+        
+        Arguments:
+        card -- An instance of the Card class
+        """
+        self.deck.append(card)
+
+    def draw_card(self):
+        """ 
+        Takes a card out of the deck, reshuffles if empty
+        
+        Returns:
+        Card -- A Card object from the top of the deck
+        """
+        if not len(self.deck) == 0:
+            return self.deck.pop()
+        else:
+            self.__init__()
+            return self.deck.pop()
+
+
+# ======================== PLAYER CLASS ========================
+
+class Player():
+    """ Represents a player in the game """
+    
+    def __init__(self, player_num):
+        """
+        Constructor for Player Class
+        
+        Arguments:
+        player_num -- The player's number
+        """
+        self.hand = []
+        self.points = 0
+        self.total_score = 0  # cumulative score across rounds
+        self.hand_count = len(self.hand)
+        self.InGame = True
+        self.player_num = player_num
+        self.default_player_locations = {1: "bottom", 2: "top"}
+        self.standing = False  # track if player is standing this round
+        self.busted = False    # track if player busted this round
+        self.has_second_chance = False  # track if player has second chance card
+
+    def draw_cards_on_screen(self, surface: pygame.Surface, SCREEN_WIDTH, SCREEN_HEIGHT, loc=None):
+        """
+        Draws cards at a location on the screen
+        
+        Arguments:
+        surface -- An instance of pygame's Surface class
+        SCREEN_WIDTH -- The screen width of the pygame window
+        SCREEN_HEIGHT -- The screen height of the pygame window
+        loc -- Which side of the screen to draw the cards on (optional)
+        """
+        # handle empty hands
+        if not self.hand:
+            return
+        
+        # use player num to set loc
+        loc = self.default_player_locations[self.get_player_num()]
+        # use first card in player's hand as reference
+        ref_card = self.hand[0]
+        card_width = ref_card.get_card_width()
+        card_height = ref_card.get_card_height()
+        spacing = ref_card.get_card_spacing()
+
+        # get total width of all cards with spacing
+        total_width = len(self.hand) * card_width + (len(self.hand) - 1) * spacing
+        start_x = (SCREEN_WIDTH - total_width) // 2
+
+        # vertical location
+        if loc == "bottom":
+            start_y = SCREEN_HEIGHT - card_height - 20
+        elif loc == "top":
+            start_y = 20
+        else:
+            raise NotImplementedError
+
+        # draw cards
+        for i, card in enumerate(self.hand):
+            x = start_x + i * (card_width + spacing)
+            card.draw_card_to_screen(surface, x, start_y)
+
+    def draw_card(self, deck: Deck):
+        """
+        Draws a card from the given deck and adds it to the player's hand
+        
+        Arguments:
+        deck -- An instance of the Deck class
+        
+        Returns:
+        Card/str/bool -- The drawn card, "second_chance_used" string, or False if busted
+        """
+        # draw card from deck
+        card = deck.draw_card()
+        
+        # handle ability cards
+        if card.isAnAbilityCard():
+            if card.get_card_name() == "Second\nChance":
+                # hold onto second chance card
+                self.has_second_chance = True
+                return card  # return the card for tracking
+            else:
+                # other ability cards are used immediately
+                return card
+        
+        # handle modifiers - add to hand but don't count for bust
+        if card.get_card_type() == "modifier":
+            self.hand.append(card)
+            return card
+        
+        # check for bust (only for number cards)
+        for c in self.hand:
+            # check for equality excluding abilities and score modifiers
+            if c.get_card_name() == card.get_card_name() and card.isARegularCard():
+                # player busted
+                self.hand.append(card)
+                
+                # check if player has second chance
+                if self.has_second_chance:
+                    self.has_second_chance = False
+                    return "second_chance_used"  # special return value
+                else:
+                    self.busted = True
+                    return False
+        
+        # player got a unique card
+        self.hand.append(card)
+        # player didn't bust, return card gotten
+        return card
+        
+    def get_player_num(self):
+        """ Getter method for player_num """
+        return self.player_num
+
+    def get_hand_size(self):
+        """ Getter method for length of hand """
+        return len(self.hand)
+    
+    def get_number_card_count(self):
+        """ 
+        Getter method for the count of only number cards 
+        
+        Returns:
+        int -- Count of number cards in hand
+        """
+        count = 0
+        for card in self.hand:
+            if card.isARegularCard():
+                count += 1
+        return count
+    
+    def get_hand(self):
+        """ Getter method for the list of the player's hand """
+        return self.hand
+    
+    def set_hand(self, hand: list):
+        """
+        Setter method for the hand list
+        
+        Arguments:
+        hand -- A list of Card objects representing the player's hand
+        """
+        self.hand = hand
+
+    def reset_hand(self):
+        """ Resets the player's hand and status, called after every round """
+        self.set_hand([])
+        self.standing = False
+        self.busted = False
+        self.has_second_chance = False
+    
+    def set_standing(self, value: bool):
+        """
+        Setter method to set the player's standing status
+        
+        Arguments:
+        value -- True or False value representing if player is standing
+        """
+        self.standing = value
+    
+    def is_standing(self):
+        """ Boolean for checking if the player is standing """
+        return self.standing
+    
+    def is_busted(self):
+        """ Boolean for checking if the player is busted """
+        return self.busted
+    
+    def is_active(self):
+        """ 
+        Returns True if player can still take actions this round 
+        
+        Returns:
+        bool -- True if player is not standing and not busted
+        """
+        return not self.standing and not self.busted
+    
+    def calculate_round_score(self):
+        """ 
+        Calculates score for this round based on hand 
+        
+        Returns:
+        int -- The calculated score for the round
+        """
+        if self.busted:
+            return 0
+        
+        # sum up number cards
+        base_score = 0
+        multiplier = 1
+        addition = 0
+        
+        for card in self.hand:
+            if card.isARegularCard():
+                base_score += card.get_value()
+            elif card.get_card_type() == "modifier":
+                if card.get_card_name() == "x2":
+                    multiplier *= 2
+                else:
+                    # addition modifiers
+                    addition += card.get_value()
+        
+        # apply multiplier first, then addition
+        final_score = (base_score * multiplier) + addition
+        return final_score
+    
+    def add_to_total_score(self, points):
+        """
+        Adds points to the cumulative total score
+        
+        Arguments:
+        points -- Point value to add to total score
+        """
+        self.total_score += points
+    
+    def get_total_score(self):
+        """ Getter method for the total score """
+        return self.total_score
+
+
+# ======================== CARDGAME CLASS ========================
 
 class CardGame:
     """ Main class that runs everything """
     
     def __init__(self):
         """ Constructor for the CardGame Class """
-        # initalize pygame
+        # initialize pygame
         pygame.init()
         # set window size
         screen_size = (800, 600)
@@ -33,10 +469,10 @@ class CardGame:
         self.clock = pygame.time.Clock()
         self.FPS = 60
         
-        # initialze the deck
+        # initialize the deck
         self.deck = Deck()
 
-        # initalize font
+        # initialize font
         self.font = pygame.font.Font(None, 24)
         self.small_font = pygame.font.Font(None, 20)
         # colors
@@ -52,12 +488,22 @@ class CardGame:
         self.paused = False
 
     def log(self, message):
-        """ Add a message to the game log """
+        """ 
+        Add a message to the game log 
+        
+        Arguments:
+        message -- String message to add to the log
+        """
         self.gamelog += message + "\n"
         print(message)  # Also print to console for debugging
     
     def show_rules_screen(self):
-        """Display rules before game starts"""
+        """
+        Display rules before game starts
+        
+        Returns:
+        bool -- True if player started game, False if quit
+        """
         self.screen.fill(self.WHITE)
         title = self.font.render("=== FLIP 7 RULES ===", True, self.BLACK)
         title_rect = title.get_rect(center=(self.SCREEN_WIDTH // 2, 80))
@@ -104,7 +550,15 @@ class CardGame:
         return True
     
     def show_options_menu(self, players):
-        """Display options menu during game"""
+        """
+        Display options menu during game
+        
+        Arguments:
+        players -- List of Player objects
+        
+        Returns:
+        str -- "resume" to continue game or "quit" to exit
+        """
         menu_active = True
         selected_option = 0
         options = ["Resume Game", "View Rules", "View Scores", "Quit Game"]
@@ -163,7 +617,7 @@ class CardGame:
         return "resume"
     
     def show_rules_display(self):
-        """Display rules from options menu"""
+        """ Display rules from options menu """
         self.screen.fill(self.WHITE)
         
         title = self.font.render("=== GAME RULES ===", True, self.BLACK)
@@ -210,7 +664,12 @@ class CardGame:
                     waiting = False
     
     def show_scores_display(self, players):
-        """Display current scores"""
+        """
+        Display current scores from options menu
+        
+        Arguments:
+        players -- List of Player objects
+        """
         self.screen.fill(self.WHITE)
         
         title = self.font.render("=== CURRENT SCORES ===", True, self.BLACK)
@@ -219,7 +678,6 @@ class CardGame:
         
         y = 200
         for p in players:
-            p: Player
             score_text = f"Player {p.get_player_num()}: {p.get_total_score()} points"
             status = ""
             if p.is_busted():
@@ -258,12 +716,16 @@ class CardGame:
                     waiting = False
 
     def deal_cards(self, players: list):
-        """ Deals cards to all player at the start of each round """
+        """ 
+        Deals cards to all players at the start of each round 
+        
+        Arguments:
+        players -- List of Player objects
+        """
         for p in players:
-            p: Player # define p of type Player
             card = self.deck.draw_card()
             while not card.isARegularCard():
-                self.deck.add_card(card) # add card back into deck
+                self.deck.add_card(card)  # add card back into deck
                 self.deck.shuffle_deck()
                 card = self.deck.draw_card()
 
@@ -271,20 +733,24 @@ class CardGame:
             self.log(f"  Player {p.get_player_num()} dealt: {card.get_card_name()}")
     
     def display_action(self, action):
-        """ Displays text to the action bar in the middle of the screen """
-        action_bar = self.font.render(
-            action,
-            True,
-            self.BLACK
-        )
+        """ 
+        Displays text to the action bar in the middle of the screen 
+        
+        Arguments:
+        action -- String message to display
+        """
+        action_bar = self.font.render(action, True, self.BLACK)
         rect = action_bar.get_rect(center=(self.SCREEN_WIDTH // 2, self.SCREEN_HEIGHT // 2))
         self.screen.blit(action_bar, rect)
     
     def display_scores(self, players):
-        """ Display player names and scores in corners """
+        """ 
+        Display player names and scores in corners 
+        
+        Arguments:
+        players -- List of Player objects
+        """
         for p in players:
-            p: Player
-            
             if p.get_player_num() == 1:
                 # Player 1 on bottom
                 name_label = self.small_font.render(f"Player {p.get_player_num()}", True, self.BLACK)
@@ -299,7 +765,12 @@ class CardGame:
                 self.screen.blit(score_label, (self.SCREEN_WIDTH - 100, 10))
     
     def display_player_status(self, player: Player):
-        """ Display if player is standing, busted, or has second chance """
+        """ 
+        Display if player is standing, busted, or has second chance 
+        
+        Arguments:
+        player -- A Player object
+        """
         status_text = ""
         color = self.BLACK
         
@@ -326,14 +797,33 @@ class CardGame:
             self.screen.blit(status_label, rect)
     
     def get_other_player(self, players, current_player):
-        """ Returns the other player """
+        """ 
+        Returns the other player 
+        
+        Arguments:
+        players -- List of Player objects
+        current_player -- The current Player object
+        
+        Returns:
+        Player -- The other player, or None if not found
+        """
         for p in players:
             if p.get_player_num() != current_player.get_player_num():
                 return p
         return None
     
     def handle_ability_card(self, card, current_player, other_player):
-        """ Handles the automatic use of ability cards """
+        """ 
+        Handles the automatic use of ability cards 
+        
+        Arguments:
+        card -- The ability Card object
+        current_player -- The Player who drew the card
+        other_player -- The other Player affected by the card
+        
+        Returns:
+        str -- Message describing what happened
+        """
         card_name = card.get_card_name()
         
         if card_name == "Freeze":
@@ -370,7 +860,15 @@ class CardGame:
         return ""
     
     def check_round_end(self, players):
-        """ Check if round should end """
+        """ 
+        Check if round should end 
+        
+        Arguments:
+        players -- List of Player objects
+        
+        Returns:
+        tuple -- (bool, str) True/False for round ended, and end message
+        """
         # Check if any player has 7 number cards
         for p in players:
             if p.get_number_card_count() >= 7:
@@ -389,7 +887,13 @@ class CardGame:
         return False, ""
     
     def end_round(self, players, round_number):
-        """ Handle end of round scoring """
+        """ 
+        Handle end of round scoring 
+        
+        Arguments:
+        players -- List of Player objects
+        round_number -- Current round number
+        """
         self.log(f"\n--- ROUND {round_number} RESULTS ---")
         
         for p in players:
@@ -423,18 +927,18 @@ class CardGame:
         """ 
         Main Function 
         
-        Handles all proccesses: game logging, menus, game logic, etc
+        Handles all processes: game logging, menus, game logic, etc
         """
         if __name__ == "__main__":
 
-            ############## INITALIZATION #####################
+            ############## INITIALIZATION #####################
 
             self.log("GAME START")
             self.log("Number of players: 2")
             self.log("Number of rounds: 3")
             self.log("")
 
-            # initalize players
+            # initialize players
             num_players = 2
             players = []
             for i in range(num_players):
@@ -450,24 +954,23 @@ class CardGame:
                 self.log("\nGAME ABORTED BY USER")
                 return
 
-            # intialize screen
+            # initialize screen
             self.screen.fill(self.WHITE)
             
-            # deal inital cards
+            # deal initial cards
             self.log(f"=== ROUND {round_number} START ===")
             self.log("Dealing initial cards:")
             self.deal_cards(players)
             
-            # intial draw players
+            # initial draw players
             for p in players:
-                p: Player # p is of typer Player
                 p.draw_cards_on_screen(self.screen, 
                                        self.SCREEN_WIDTH, 
                                        self.SCREEN_HEIGHT)
             
             # display initial scores
             self.display_scores(players)
-            # intial screen update
+            # initial screen update
             pygame.display.update()
 
             ################ MAIN GAME LOOP ####################
@@ -653,6 +1156,9 @@ class CardGame:
                 print(f"\nUnexpected error while saving game log: {e}")
 
 
-game = CardGame()
-game.main()
-pygame.quit()
+# ======================== MAIN EXECUTION ========================
+
+if __name__ == "__main__":
+    game = CardGame()
+    game.main()
+    pygame.quit()

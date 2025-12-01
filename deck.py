@@ -4,6 +4,7 @@ class Deck:
     """ A class that holds the data for the deck """
 
     def __init__(self):
+        """ Constructor for the Deck Class """
         # int number to letter number dict
         num_words = {
         0: "Zero",
@@ -51,11 +52,21 @@ class Deck:
         return self.deck
     
     def set_deck(self, deck):
-        """ Sets deck to a new list """
+        """
+        Sets deck to a new list
+        
+        Arguments:
+        deck -- An instance of the Deck class
+        """
         self.deck = deck
 
     def add_card(self, card: card.Card):
-        """ Adds a card back into the deck """
+        """ 
+        Adds a card back into the deck 
+        
+        Arguments:
+        card -- An instance of the Card class
+        """
         self.deck.append(card)
 
     def draw_card(self):

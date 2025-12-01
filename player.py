@@ -5,6 +5,12 @@ import pygame
 class Player():
     
     def __init__(self, player_num):
+        """
+        Constructor for Player Class
+        
+        Arguments:
+        player_num -- The player's number
+        """
         self.hand = []
         self.points = 0
         self.total_score = 0  # cumulative score across rounds
@@ -17,7 +23,15 @@ class Player():
         self.has_second_chance = False  # track if player has second chance card
 
     def draw_cards_on_screen(self, surface: pygame.Surface, SCREEN_WIDTH, SCREEN_HEIGHT, loc=None):
-        """ Draws cards at a location on the screen """
+        """
+        Draws cards at a location on the screen
+        
+        Arguments:
+        surface -- An instance of pygame's Surface class
+        SCREEN_WIDTH -- the screen width of the pygame window
+        SCREEN_HEIGHT -- the screen height of the pygame window
+        loc -- which side of the screen to draw the card on
+        """
         
         # handle empty hands
         if not self.hand:
@@ -49,7 +63,12 @@ class Player():
             card.draw_card_to_screen(surface, x, start_y)
 
     def draw_card(self, deck: Deck):
-        """ Draws a card from the given deck and adds it to the player's hand """
+        """
+        Draws a card from the given deck and adds it to the player's hand
+        
+        Arguments:
+        deck -- An instance of the Deck class
+        """
         # draw card from deck
         card = deck.draw_card()
         
@@ -90,13 +109,15 @@ class Player():
         return card
         
     def get_player_num(self):
+        """ Getter method for player_num """
         return self.player_num
 
     def get_hand_size(self):
+        """ Getter method for length of self.hand """
         return len(self.hand)
     
     def get_number_card_count(self):
-        """ Returns count of only number cards """
+        """ Getter method for the count of only number cards """
         count = 0
         for card in self.hand:
             if card.isARegularCard():
@@ -104,24 +125,40 @@ class Player():
         return count
     
     def get_hand(self):
+        """ Getter method for the list of the player's hand """
         return self.hand
     
     def set_hand(self, hand: list):
+        """
+        Setter method for the self.hand list
+        
+        Arguments:
+        hand -- a list of cards of the player's hand
+        """
         self.hand = hand
 
     def reset_hand(self):
+        """ Resets the player's hand, called after every round"""
         self.set_hand([])
         self.standing = False
         self.busted = False
         self.has_second_chance = False
     
     def set_standing(self, value: bool):
+        """
+        Setter method to set the player's status of standing or not
+        
+        Arguments:
+        value -- True or False value that represents the status of the player's standing
+        """
         self.standing = value
     
     def is_standing(self):
+        """ Boolean for checking if the player is standing """
         return self.standing
     
     def is_busted(self):
+        """ Boolean for checking if the player is busted """
         return self.busted
     
     def is_active(self):
@@ -153,8 +190,14 @@ class Player():
         return final_score
     
     def add_to_total_score(self, points):
-        """ Adds points to the cumulative total score """
+        """
+        Adds points to the cumulative total score
+        
+        Arguments:
+        points -- point value of current round
+        """
         self.total_score += points
     
     def get_total_score(self):
+        """ Getter method for the total score"""
         return self.total_score

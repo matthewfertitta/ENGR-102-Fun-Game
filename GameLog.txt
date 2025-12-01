@@ -1,0 +1,96 @@
+=== FLIP 7 GAME LOG ===
+
+GAME START
+Number of players: 2
+Number of rounds: 3
+
+=== ROUND 1 START ===
+Dealing initial cards:
+  Player 1 dealt: Eleven
+  Player 2 dealt: Ten
+
+Player 1's turn: DRAW
+  Drew: Seven
+  Current number cards: 2/7
+
+Player 2's turn: DRAW
+  Drew: Three
+  Current number cards: 2/7
+
+Player 1's turn: DRAW
+  BUSTED: Drew duplicate card
+
+Player 2's turn: DRAW
+  Drew: +6
+  Current number cards: 2/7
+
+Player 2's turn: DRAW
+  Drew: Twelve
+  Current number cards: 3/7
+
+Player 2's turn: DRAW
+  BUSTED: Drew duplicate card
+
+ROUND END: All players standing or busted!
+
+--- ROUND 1 RESULTS ---
+Player 1 (BUSTED):
+  Hand: [Eleven, Seven, Seven]
+  Number cards: 3
+  Round score: 0 points
+  Total score: 0 points
+Player 2 (BUSTED):
+  Hand: [Ten, Three, +6, Twelve, Ten]
+  Number cards: 4
+  Round score: 0 points
+  Total score: 0 points
+
+=== ROUND 2 START ===
+Dealing initial cards:
+  Player 1 dealt: Twelve
+  Player 2 dealt: Nine
+
+Player 1's turn: DRAW
+  Drew: Ten
+  Current number cards: 2/7
+
+Player 2's turn: DRAW
+  Drew: Seven
+  Current number cards: 2/7
+
+Player 1's turn: DRAW
+  Drew: One
+  Current number cards: 3/7
+
+Player 2's turn: DRAW
+  Drew: Ten
+  Current number cards: 3/7
+
+Player 1's turn: DRAW
+  Drew: Four
+  Current number cards: 4/7
+
+Player 2's turn: STAND
+
+Player 1's turn: STAND
+
+ROUND END: All players standing or busted!
+
+--- ROUND 2 RESULTS ---
+Player 1 (STANDING):
+  Hand: [Twelve, Ten, One, Four]
+  Number cards: 4
+  Round score: 27 points
+  Total score: 27 points
+Player 2 (STANDING):
+  Hand: [Nine, Seven, Ten]
+  Number cards: 3
+  Round score: 26 points
+  Total score: 26 points
+
+=== ROUND 3 START ===
+Dealing initial cards:
+  Player 1 dealt: Ten
+  Player 2 dealt: Eleven
+
+GAME QUIT FROM OPTIONS MENU
